@@ -75,6 +75,12 @@
 
           <div id="messageBox" class="mt-6 hidden p-4 rounded-lg bg-gray-700 bg-opacity-80 backdrop-blur-sm"></div>
         </div>
+
+        <!-- Game History -->
+        <div class="mt-8 bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
+          <h3 class="text-xl font-bold mb-4">Historia rozgrywek</h3>
+          <ul id="historyList" class="space-y-2 text-sm text-gray-300 list-disc pl-4"></ul>
+        </div>
       </section>
     </main>
   </div>
@@ -123,14 +129,22 @@
     let selectedColor = null;
     let activeTab = "number";
     let username = "";
+    const history = [];
 
     function login() {
       const input = document.getElementById("usernameInput");
       username = input.value.trim();
       if (!username) return alert("Podaj swój nick!");
+
+      const savedData = JSON.parse(localStorage.getItem(`casino_user_${username}`)) || {};
+      balance = savedData.balance || 0;
+
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
+
       document.getElementById("playerName").textContent = username;
+      updateUI();
+      loadHistory();
     }
 
     function updateUI() {
@@ -198,6 +212,8 @@
 
       balance += depositAmount;
       updateUI();
+      saveState();
+
       statusDiv.textContent = "Sukces! Środki zostały doładowane.";
       statusDiv.className = "mb-4 p-3 rounded bg-green-800 text-green-100 block";
 
@@ -216,6 +232,7 @@
       }
       balance -= amount;
       updateUI();
+      saveState();
       closeModal("withdraw");
       alert(`Wypłacono ${amount} PLN`);
     }
@@ -253,11 +270,13 @@
       // Symulacja kręcenia ruletki
       setTimeout(() => {
         const winningNumber = Math.floor(Math.random() * 37);
+
         const getColor = (num) => {
           if (num === 0) return "green";
           if ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num)) return "red";
           return "black";
         };
+
         const winningColor = getColor(winningNumber);
 
         let winMessage = "";
@@ -265,7 +284,7 @@
 
         if (activeTab === "number") {
           if (winningNumber === selectedNumber) {
-            winAmount = betAmount * 36;
+            winAmount = betAmount * (winningNumber === 0 ? 36 : 36);
             winMessage = `Gratulacje! Wygrałeś ${winAmount} PLN. Wylosowany numer: ${winningNumber}`;
           } else {
             winMessage = `Przegrałeś. Wylosowany numer: ${winningNumber}`;
@@ -281,6 +300,15 @@
 
         balance += winAmount;
         updateUI();
+        saveState();
+
+        history.push({
+          time: new Date().toLocaleString(),
+          bet: betAmount,
+          result: winMessage.includes("Gratulacje") ? "Win" : "Loss",
+          profit: winMessage.includes("Gratulacje") ? winAmount - betAmount : -betAmount
+        });
+        saveHistory();
 
         messageBox.textContent = winMessage;
         messageBox.classList.remove("hidden");
@@ -288,6 +316,25 @@
         document.getElementById("placeBetBtn").textContent = "Postaw zakład";
         document.getElementById("placeBetBtn").classList.remove("bg-gray-600", "cursor-not-allowed");
       }, 2000);
+    }
+
+    function loadHistory() {
+      const list = document.getElementById("historyList");
+      list.innerHTML = "";
+      history.forEach(entry => {
+        const li = document.createElement("li");
+        li.textContent = `${entry.time} — Zakład: ${entry.bet} PLN | Wynik: ${entry.result} | Zysk: ${entry.profit} PLN`;
+        li.className = entry.profit >= 0 ? "text-green-400" : "text-red-400";
+        list.appendChild(li);
+      });
+    }
+
+    function saveState() {
+      localStorage.setItem(`casino_balance_${username}`, balance.toString());
+    }
+
+    function saveHistory() {
+      localStorage.setItem(`casino_history_${username}`, JSON.stringify(history));
     }
 
     window.onload = () => {
@@ -319,13 +366,20 @@
         const btn = document.createElement("button");
         btn.textContent = num;
         btn.onclick = () => selectNumber(num);
+        const color = num === 0 ? "green" : ["red", "black"][Math.floor(Math.random() * 2)];
         btn.className = `py-2 px-3 rounded-md ${
-          ["red", "black", "green"][Math.floor(Math.random() * 3)] === "red"
-            ? "bg-red-600 text-white"
-            : "bg-gray-600 text-white"
+          color === "red" ? "bg-red-600 text-white" :
+          color === "black" ? "bg-gray-600 text-white" : "bg-green-600 text-white"
         }`;
         document.getElementById("tabContentNumbers").appendChild(btn);
       });
+
+      // Wczytaj historię jeśli istnieje
+      const savedHistory = JSON.parse(localStorage.getItem(`casino_history_${username}`));
+      if (savedHistory) {
+        savedHistory.forEach(entry => history.push(entry));
+        loadHistory();
+      }
     };
   </script>
 </body>
