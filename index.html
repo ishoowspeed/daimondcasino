@@ -3,17 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Virtual Casino - Ruletka</title>
+  <title>Virtual Casino</title>
   <script src="https://cdn.tailwindcss.com"></script> 
-  <style>
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .spin-animation {
-      animation: spin 2s ease-out;
-    }
-  </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 to-black text-white min-h-screen">
 
@@ -43,46 +34,32 @@
       </div>
     </header>
 
-    <!-- Game Content -->
-    <main class="max-w-3xl mx-auto mt-8">
-      <section>
-        <h2 class="text-2xl font-bold mb-6 text-center">Ruletka</h2>
-        <div id="rouletteGame" class="bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
-          <div class="flex justify-between items-center mb-6">
-            <p class="text-lg">Saldo: <span id="gameBalance" class="font-bold">0 PLN</span></p>
-          </div>
+    <!-- Game Mode Selection -->
+    <section class="max-w-3xl mx-auto mt-8">
+      <div class="grid grid-cols-2 gap-6">
+        <button onclick="switchGame('roulette')" class="py-6 px-4 bg-gray-800 hover:bg-gray-700 rounded-xl shadow-md text-center transition">
+          <h3 class="text-xl font-bold">Ruletka</h3>
+          <p class="text-gray-400">Zakłady od 1zł</p>
+        </button>
+        <button onclick="switchGame('slots')" class="py-6 px-4 bg-gray-800 hover:bg-gray-700 rounded-xl shadow-md text-center transition">
+          <h3 class="text-xl font-bold">Automat do Gier</h3>
+          <p class="text-gray-400">Minimalna stawka: 100zł</p>
+        </button>
+      </div>
+    </section>
 
-          <div class="mb-6">
-            <label for="betAmount" class="block text-sm font-medium text-gray-300 mb-2">Kwota zakładu</label>
-            <input type="number" id="betAmount" min="1" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"/>
-          </div>
-
-          <!-- Tabs -->
-          <div class="flex border-b border-gray-700 mb-6">
-            <button onclick="setTab('number')" id="tabNumber" class="py-2 px-4 font-medium border-b-2 border-blue-500 text-blue-400">Zakład na liczbę</button>
-            <button onclick="setTab('color')" id="tabColor" class="py-2 px-4 font-medium text-gray-400 hover:text-gray-200">Zakład na kolor</button>
-          </div>
-
-          <!-- Tab Content -->
-          <div id="tabContentNumbers" class="grid grid-cols-6 gap-2 mb-6"></div>
-
-          <div id="tabContentColors" class="hidden flex justify-center gap-6 mb-6">
-            <button onclick="selectColor('red')" id="btnRed" class="px-6 py-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700">Czerwony</button>
-            <button onclick="selectColor('black')" id="btnBlack" class="px-6 py-4 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700">Czarny</button>
-          </div>
-
-          <button onclick="placeBet()" id="placeBetBtn" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold transition-colors">Postaw zakład</button>
-
-          <div id="messageBox" class="mt-6 hidden p-4 rounded-lg bg-gray-700 bg-opacity-80 backdrop-blur-sm"></div>
-        </div>
-
-        <!-- Game History -->
-        <div class="mt-8 bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
-          <h3 class="text-xl font-bold mb-4">Historia rozgrywek</h3>
-          <ul id="historyList" class="space-y-2 text-sm text-gray-300 list-disc pl-4"></ul>
-        </div>
-      </section>
+    <!-- Roulette Game -->
+    <main id="gameContent" class="max-w-3xl mx-auto mt-8 hidden">
+      <!-- Dynamic game content will be inserted here -->
     </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 bg-opacity-70 backdrop-blur-md py-6 mt-12">
+      <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 Virtual Casino. Wszelkie prawa zastrzeżone.</p>
+        <p class="mt-1">To jest aplikacja testowa. Nie ma realnych pieniędzy ani zakładów.</p>
+      </div>
+    </footer>
   </div>
 
   <!-- Deposit Modal -->
@@ -94,13 +71,17 @@
         <div class="flex flex-wrap justify-center gap-2 mb-4" id="depositOptions"></div>
       </div>
       <div class="mb-6">
+        <label for="depositAmount" class="block text-sm font-medium text-gray-300 mb-2">Kwota do doładowania</label>
+        <input type="number" id="depositAmount" min="10" step="10" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"/>
+      </div>
+      <div class="mb-6">
         <label for="blikCode" class="block text-sm font-medium text-gray-300 mb-2">Kod BLIK (6 cyfr)</label>
-        <input type="text" id="blikCode" maxlength="6" placeholder="123456" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"/>
+        <input type="text" id="blikCode" maxlength="6" placeholder="123456" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"/>
       </div>
       <div id="transactionStatus" class="mb-4 p-3 hidden rounded bg-green-800 text-green-100"></div>
       <div class="flex space-x-3">
-        <button onclick="closeModal('deposit')" class="flex-1 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">Anuluj</button>
-        <button onclick="handleDeposit()" id="confirmDepositBtn" class="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-medium transition-colors">Potwierdź</button>
+        <button onclick="closeModal('deposit')" class="flex-1 py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded transition">Anuluj</button>
+        <button onclick="handleDeposit()" class="flex-1 py-2 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded font-medium transition">Potwierdź</button>
       </div>
     </div>
   </div>
@@ -111,17 +92,73 @@
       <h3 class="text-xl font-bold mb-4 text-center">Wypłata środków</h3>
       <p class="text-gray-300 mb-6 text-center">Wybierz kwotę do wypłaty:</p>
       <div class="grid grid-cols-2 gap-3 mb-6" id="withdrawOptions"></div>
-      <button onclick="closeModal('withdraw')" class="w-full py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">Zamknij</button>
+      <button onclick="closeModal('withdraw')" class="w-full py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded transition">Zamknij</button>
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="bg-gray-800 bg-opacity-70 backdrop-blur-md py-6 mt-12">
-    <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
-      <p>&copy; 2025 Virtual Casino. Wszelkie prawa zastrzeżone.</p>
-      <p class="mt-1">To jest aplikacja testowa. Nie ma realnych pieniędzy ani zakładów.</p>
-    </div>
-  </footer>
+  <!-- Game Templates -->
+  <template id="rouletteTemplate">
+    <section>
+      <h2 class="text-2xl font-bold mb-6 text-center">Ruletka</h2>
+      <div class="bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
+        <div class="flex justify-between items-center mb-6">
+          <p class="text-lg">Saldo: <span id="gameBalance" class="font-bold">0 PLN</span></p>
+        </div>
+
+        <div class="mb-6">
+          <label for="betAmountRoulette" class="block text-sm font-medium text-gray-300 mb-2">Kwota zakładu</label>
+          <input type="number" id="betAmountRoulette" min="1" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"/>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-700 mb-6">
+          <button onclick="setTab('number')" class="py-2 px-4 font-medium border-b-2 border-blue-500 text-blue-400">Zakład na liczbę</button>
+          <button onclick="setTab('color')" class="py-2 px-4 font-medium text-gray-400 hover:text-gray-200">Zakład na kolor</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContentNumbers" class="grid grid-cols-6 gap-2 mb-6"></div>
+        <div id="tabContentColors" class="hidden flex justify-center gap-6 mb-6">
+          <button onclick="selectColor('red')" class="px-6 py-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700">Czerwony</button>
+          <button onclick="selectColor('black')" class="px-6 py-4 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700">Czarny</button>
+        </div>
+
+        <button onclick="placeBet()" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold transition-colors">Postaw zakład</button>
+        <div id="messageBox" class="mt-6 hidden p-4 rounded-lg bg-gray-700 bg-opacity-80 backdrop-blur-sm"></div>
+      </div>
+
+      <div class="mt-8 bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
+        <h3 class="text-xl font-bold mb-4">Historia rozgrywek</h3>
+        <ul id="historyList" class="space-y-2 text-sm text-gray-300 list-disc pl-4"></ul>
+      </div>
+    </section>
+  </template>
+
+  <!-- Slot Machine Template -->
+  <template id="slotsTemplate">
+    <section>
+      <h2 class="text-2xl font-bold mb-6 text-center">Automat do Gier</h2>
+      <div class="bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700 text-center">
+        <div class="flex justify-between items-center mb-6">
+          <p class="text-lg">Saldo: <span id="gameBalanceSlots" class="font-bold">0 PLN</span></p>
+        </div>
+
+        <div id="slotsDisplay" class="grid grid-cols-3 gap-4 text-5xl font-bold mb-6">
+          <div class="bg-gray-700 p-6 rounded-lg flex items-center justify-center h-20">?</div>
+          <div class="bg-gray-700 p-6 rounded-lg flex items-center justify-center h-20">?</div>
+          <div class="bg-gray-700 p-6 rounded-lg flex items-center justify-center h-20">?</div>
+        </div>
+
+        <button onclick="spinSlots()" class="w-full py-3 px-4 mb-4 rounded-lg bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold transition-colors">Krecenie automatu</button>
+        <div id="slotsMessage" class="mt-4 p-4 rounded-lg bg-gray-700 bg-opacity-80 backdrop-blur-sm hidden"></div>
+      </div>
+
+      <div class="mt-8 bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
+        <h3 class="text-xl font-bold mb-4">Historia rozgrywek</h3>
+        <ul id="historyListSlots" class="space-y-2 text-sm text-gray-300 list-disc pl-4"></ul>
+      </div>
+    </section>
+  </template>
 
   <script>
     let balance = 0;
@@ -136,35 +173,73 @@
       username = input.value.trim();
       if (!username) return alert("Podaj swój nick!");
 
-      const savedData = JSON.parse(localStorage.getItem(`casino_user_${username}`)) || {};
+      const savedData = JSON.parse(localStorage.getItem(`casino_${username}`)) || { balance: 0, history: [] };
       balance = savedData.balance || 0;
 
-      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("loginScreen").style.display = "none";
       document.getElementById("app").classList.remove("hidden");
 
       document.getElementById("playerName").textContent = username;
       updateUI();
+
+      savedData.history.forEach(entry => history.push(entry));
       loadHistory();
     }
 
     function updateUI() {
       document.getElementById("balance").textContent = `${balance} PLN`;
-      document.getElementById("gameBalance").textContent = `${balance} PLN`;
+      document.getElementById("gameBalance")?.setAttribute("id", "gameBalanceRoulette");
+      document.getElementById("gameBalanceRoulette") && (document.getElementById("gameBalanceRoulette").textContent = `${balance} PLN`);
+      document.getElementById("gameBalanceSlots") && (document.getElementById("gameBalanceSlots").textContent = `${balance} PLN`);
+    }
+
+    function switchGame(mode) {
+      const content = document.getElementById("gameContent");
+      const template = mode === "roulette"
+        ? document.getElementById("rouletteTemplate").content.cloneNode(true)
+        : document.getElementById("slotsTemplate").content.cloneNode(true);
+
+      // Usuń poprzednią zawartość
+      content.innerHTML = "";
+      content.classList.remove("hidden");
+
+      // Dodaj nowy szablon
+      content.appendChild(template);
+
+      if (mode === "roulette") initRoulette();
+      if (mode === "slots") initSlots();
+    }
+
+    function initRoulette() {
+      document.getElementById("tabContentNumbers").innerHTML = "";
+      document.getElementById("tabContentColors").innerHTML = "";
+
+      const numbers = Array.from({ length: 37 }, (_, i) => i);
+      numbers.forEach(num => {
+        const btn = document.createElement("button");
+        btn.textContent = num;
+        btn.onclick = () => selectNumber(num);
+        const color = num === 0 ? "green" : [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num) ? "red" : "black";
+        btn.className = `py-2 px-3 rounded-md ${
+          color === "red" ? "bg-red-600 text-white" :
+          color === "green" ? "bg-green-600 text-white" : "bg-gray-600 text-white"
+        }`;
+        document.getElementById("tabContentNumbers").appendChild(btn);
+      });
+
+      setTab("number");
+      updateUI();
+    }
+
+    function initSlots() {
+      updateUI();
     }
 
     function setTab(tab) {
       activeTab = tab;
-      document.getElementById("tabNumber").className = "py-2 px-4 font-medium text-gray-400 hover:text-gray-200";
-      document.getElementById("tabColor").className = "py-2 px-4 font-medium text-gray-400 hover:text-gray-200";
-      if (tab === "number") {
-        document.getElementById("tabNumber").className = "py-2 px-4 font-medium border-b-2 border-blue-500 text-blue-400";
-        document.getElementById("tabContentNumbers").classList.remove("hidden");
-        document.getElementById("tabContentColors").classList.add("hidden");
-      } else {
-        document.getElementById("tabColor").className = "py-2 px-4 font-medium border-b-2 border-blue-500 text-blue-400";
-        document.getElementById("tabContentNumbers").classList.add("hidden");
-        document.getElementById("tabContentColors").classList.remove("hidden");
-      }
+      const tabs = document.querySelectorAll("[data-tab]");
+      tabs.forEach(t => t.classList.remove("border-b-2", "border-blue-500", "text-blue-400"));
+      document.querySelector(`[data-tab='${tab}']`).classList.add("border-b-2", "border-blue-500", "text-blue-400");
     }
 
     function selectNumber(num) {
@@ -176,9 +251,9 @@
       document.getElementById("btnRed").className = "px-6 py-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700";
       document.getElementById("btnBlack").className = "px-6 py-4 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700";
       if (color === "red") {
-        document.getElementById("btnRed").className += " ring-2 ring-offset-2 ring-red-400 scale-105";
+        document.getElementById("btnRed").classList.add("ring-2", "ring-offset-2", "ring-red-400", "scale-105");
       } else {
-        document.getElementById("btnBlack").className += " ring-2 ring-offset-2 ring-gray-400 scale-105";
+        document.getElementById("btnBlack").classList.add("ring-2", "ring-offset-2", "ring-gray-400", "scale-105");
       }
     }
 
@@ -191,37 +266,28 @@
     }
 
     function handleDeposit() {
-      const amountInput = document.getElementById("depositAmount");
-      const codeInput = document.getElementById("blikCode");
-      const statusDiv = document.getElementById("transactionStatus");
+      const amount = parseInt(document.getElementById("depositAmount").value);
+      const code = document.getElementById("blikCode").value;
 
-      const depositAmount = parseInt(amountInput.value);
-      const blikCode = codeInput.value;
-
-      if (!depositAmount || depositAmount <= 0 || isNaN(depositAmount)) {
-        statusDiv.textContent = "Podaj prawidłową kwotę.";
-        statusDiv.className = "mb-4 p-3 rounded bg-red-800 text-red-100 block";
+      if (!amount || amount <= 0 || isNaN(amount)) {
+        showStatus("Podaj prawidłową kwotę.", "error");
         return;
       }
 
-      if (blikCode.length !== 6 || !/^\d+$/.test(blikCode)) {
-        statusDiv.textContent = "Nieprawidłowy kod BLIK. Wprowadź 6 cyfr.";
-        statusDiv.className = "mb-4 p-3 rounded bg-red-800 text-red-100 block";
+      if (code.length !== 6 || !/^\d+$/.test(code)) {
+        showStatus("Nieprawidłowy kod BLIK.", "error");
         return;
       }
 
-      balance += depositAmount;
+      balance += amount;
       updateUI();
       saveState();
-
-      statusDiv.textContent = "Sukces! Środki zostały doładowane.";
-      statusDiv.className = "mb-4 p-3 rounded bg-green-800 text-green-100 block";
+      showStatus("Sukces! Środki zostały doładowane.", "success");
 
       setTimeout(() => {
         closeModal("deposit");
-        amountInput.value = "";
-        codeInput.value = "";
-        statusDiv.classList.add("hidden");
+        document.getElementById("depositAmount").value = "";
+        document.getElementById("blikCode").value = "";
       }, 1500);
     }
 
@@ -238,49 +304,39 @@
     }
 
     function placeBet() {
-      const betAmount = parseInt(document.getElementById("betAmount").value, 10);
+      const betAmount = parseInt(document.getElementById("betAmountRoulette").value, 10);
       const messageBox = document.getElementById("messageBox");
 
       if (!betAmount || betAmount <= 0 || isNaN(betAmount)) {
         messageBox.textContent = "Podaj prawidłową stawkę.";
-        messageBox.classList.remove("hidden");
+        messageBox.className = "mt-6 p-4 rounded bg-red-800 bg-opacity-80 block text-white";
         return;
       }
 
       if ((activeTab === "number" && selectedNumber === null) || (activeTab === "color" && selectedColor === null)) {
         messageBox.textContent = "Wybierz numer lub kolor!";
-        messageBox.classList.remove("hidden");
+        messageBox.className = "mt-6 p-4 rounded bg-red-800 bg-opacity-80 block text-white";
         return;
       }
 
       if (betAmount > balance) {
-        messageBox.textContent = "Nie masz wystarczających środków.";
-        messageBox.classList.remove("hidden");
+        messageBox.textContent = "Brak środków!";
+        messageBox.className = "mt-6 p-4 rounded bg-red-800 bg-opacity-80 block text-white";
         return;
       }
 
       balance -= betAmount;
       updateUI();
+      saveState();
 
       messageBox.classList.add("hidden");
-      document.getElementById("placeBetBtn").disabled = true;
-      document.getElementById("placeBetBtn").textContent = "Krecę...";
-      document.getElementById("placeBetBtn").classList.add("bg-gray-600", "cursor-not-allowed");
 
       // Symulacja kręcenia ruletki
       setTimeout(() => {
         const winningNumber = Math.floor(Math.random() * 37);
+        const getColor = n => n === 0 ? "green" : [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(winningNumber) ? "red" : "black";
 
-        const getColor = (num) => {
-          if (num === 0) return "green";
-          if ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num)) return "red";
-          return "black";
-        };
-
-        const winningColor = getColor(winningNumber);
-
-        let winMessage = "";
-        let winAmount = 0;
+        let winMessage = "", winAmount = 0;
 
         if (activeTab === "number") {
           if (winningNumber === selectedNumber) {
@@ -289,7 +345,8 @@
           } else {
             winMessage = `Przegrałeś. Wylosowany numer: ${winningNumber}`;
           }
-        } else if (activeTab === "color") {
+        } else {
+          const winningColor = getColor(winningNumber);
           if (winningColor === selectedColor) {
             winAmount = betAmount * 2;
             winMessage = `Gratulacje! Wygrałeś ${winAmount} PLN. Wylosowany numer: ${winningNumber} (${winningColor})`;
@@ -304,52 +361,120 @@
 
         history.push({
           time: new Date().toLocaleString(),
+          game: "ruletka",
           bet: betAmount,
           result: winMessage.includes("Gratulacje") ? "Win" : "Loss",
           profit: winMessage.includes("Gratulacje") ? winAmount - betAmount : -betAmount
         });
         saveHistory();
+        loadHistory();
 
         messageBox.textContent = winMessage;
-        messageBox.classList.remove("hidden");
-        document.getElementById("placeBetBtn").disabled = false;
-        document.getElementById("placeBetBtn").textContent = "Postaw zakład";
-        document.getElementById("placeBetBtn").classList.remove("bg-gray-600", "cursor-not-allowed");
+        messageBox.className = "mt-6 p-4 rounded bg-green-800 bg-opacity-80 block text-white";
       }, 2000);
+    }
+
+    function spinSlots() {
+      if (balance < 100) {
+        alert("Minimalna stawka to 100 PLN!");
+        return;
+      }
+
+      balance -= 100;
+      updateUI();
+      saveState();
+
+      const display = document.getElementById("slotsDisplay").children;
+      const symbols = ["🍒", "🍋", "🔔", "💎", "7"];
+      let result = [];
+
+      for (let i = 0; i < 3; i++) {
+        const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+        display[i].textContent = "?";
+        display[i].style.opacity = "1";
+        display[i].style.transform = "scale(1)";
+        display[i].style.transition = "all 1s ease-in-out";
+
+        setTimeout(() => {
+          display[i].textContent = symbol;
+          display[i].style.opacity = "1";
+          display[i].style.transform = "scale(1.1)";
+        }, 1000 + i * 500);
+        result.push(symbol);
+      }
+
+      setTimeout(() => {
+        const isWin = result[0] === result[1] && result[1] === result[2];
+        const msgBox = document.getElementById("slotsMessage");
+
+        if (isWin) {
+          const reward = 1000;
+          balance += reward;
+          updateUI();
+          saveState();
+          msgBox.textContent = `🎉 Jackpot! Wygrałeś ${balance - (balance - 1000)} PLN!`;
+          msgBox.className = "mt-4 p-4 rounded bg-green-800 text-white block";
+        } else {
+          msgBox.textContent = "Spróbuj ponownie...";
+          msgBox.className = "mt-4 p-4 rounded bg-red-800 text-white block";
+        }
+
+        history.push({
+          time: new Date().toLocaleString(),
+          game: "slot",
+          bet: 100,
+          result: isWin ? "Win" : "Loss",
+          profit: isWin ? 900 : -100
+        });
+        saveHistory();
+        loadHistory();
+      }, 2500);
     }
 
     function loadHistory() {
       const list = document.getElementById("historyList");
-      list.innerHTML = "";
-      history.forEach(entry => {
-        const li = document.createElement("li");
-        li.textContent = `${entry.time} — Zakład: ${entry.bet} PLN | Wynik: ${entry.result} | Zysk: ${entry.profit} PLN`;
-        li.className = entry.profit >= 0 ? "text-green-400" : "text-red-400";
-        list.appendChild(li);
-      });
+      const listSlots = document.getElementById("historyListSlots");
+      if (!list && !listSlots) return;
+
+      if (list) {
+        list.innerHTML = "";
+        history.filter(h => h.game === "ruletka").forEach(entry => {
+          const li = document.createElement("li");
+          li.textContent = `${entry.time} — Zakład: ${entry.bet} PLN | Wynik: ${entry.result} | Zysk: ${entry.profit} PLN`;
+          li.className = entry.profit >= 0 ? "text-green-400" : "text-red-400";
+          list.appendChild(li);
+        });
+      }
+
+      if (listSlots) {
+        listSlots.innerHTML = "";
+        history.filter(h => h.game === "slot").forEach(entry => {
+          const li = document.createElement("li");
+          li.textContent = `${entry.time} — Zakład: ${entry.bet} PLN | Wynik: ${entry.result} | Zysk: ${entry.profit} PLN`;
+          li.className = entry.profit >= 0 ? "text-green-400" : "text-red-400";
+          listSlots.appendChild(li);
+        });
+      }
     }
 
     function saveState() {
-      localStorage.setItem(`casino_balance_${username}`, balance.toString());
+      localStorage.setItem(`casino_${username}`, JSON.stringify({ balance, history }));
     }
 
-    function saveHistory() {
-      localStorage.setItem(`casino_history_${username}`, JSON.stringify(history));
+    function showStatus(msg, type) {
+      const statusDiv = document.getElementById("transactionStatus");
+      statusDiv.textContent = msg;
+      statusDiv.className = `mb-4 p-3 rounded ${type === "success" ? "bg-green-800 text-green-100" : "bg-red-800 text-red-100"} block`;
     }
 
     window.onload = () => {
-      const numbers = Array.from({ length: 37 }, (_, i) => i);
       const depositOptionsContainer = document.getElementById("depositOptions");
       const withdrawOptionsContainer = document.getElementById("withdrawOptions");
 
       [10, 20, 50, 100, 500].forEach(amount => {
         const btn = document.createElement("button");
         btn.textContent = `${amount} PLN`;
-        btn.onclick = () => {
-          document.getElementById("depositAmount").value = amount;
-          document.querySelectorAll("#depositOptions button").forEach(b => b.classList.remove("bg-blue-600", "text-white"));
-          btn.classList.add("bg-blue-600", "text-white");
-        };
+        btn.onclick = () => document.getElementById("depositAmount").value = amount;
         btn.className = "px-4 py-2 m-1 rounded-full text-sm font-medium bg-gray-700 hover:bg-gray-600 text-gray-300";
         depositOptionsContainer.appendChild(btn);
       });
@@ -361,26 +486,12 @@
         btn.className = "py-3 px-4 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-medium transition-colors";
         withdrawOptionsContainer.appendChild(btn);
       });
-
-      numbers.forEach(num => {
-        const btn = document.createElement("button");
-        btn.textContent = num;
-        btn.onclick = () => selectNumber(num);
-        const color = num === 0 ? "green" : ["red", "black"][Math.floor(Math.random() * 2)];
-        btn.className = `py-2 px-3 rounded-md ${
-          color === "red" ? "bg-red-600 text-white" :
-          color === "black" ? "bg-gray-600 text-white" : "bg-green-600 text-white"
-        }`;
-        document.getElementById("tabContentNumbers").appendChild(btn);
-      });
-
-      // Wczytaj historię jeśli istnieje
-      const savedHistory = JSON.parse(localStorage.getItem(`casino_history_${username}`));
-      if (savedHistory) {
-        savedHistory.forEach(entry => history.push(entry));
-        loadHistory();
-      }
     };
+
+    // Inicjalizacja UI po wczytaniu strony
+    window.addEventListener("load", () => {
+      updateUI();
+    });
   </script>
 </body>
 </html>
