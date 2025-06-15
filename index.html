@@ -17,61 +17,67 @@
 </head>
 <body class="bg-gradient-to-br from-gray-900 to-black text-white min-h-screen">
 
-  <!-- Header -->
-  <header class="bg-gray-800 bg-opacity-70 backdrop-blur-md py-4 shadow-lg sticky top-0 z-10">
-    <div class="container mx-auto px-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">Virtual Casino</h1>
-      <div class="flex items-center space-x-2">
-        <span class="text-sm text-gray-300">Saldo:</span>
-        <span id="balance" class="text-xl font-semibold">0 PLN</span>
-        <button onclick="openModal('deposit')" class="ml-4 px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-xs font-medium transition">Doładuj</button>
-        <button onclick="openModal('withdraw')" class="ml-2 px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-xs font-medium transition">Wypłać</button>
-      </div>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="flex items-center justify-center min-h-screen">
+    <div class="bg-gray-800 bg-opacity-90 p-8 rounded-xl shadow-2xl max-w-md w-full">
+      <h2 class="text-2xl font-bold mb-6 text-center">Zaloguj się do Virtual Casino</h2>
+      <input type="text" id="usernameInput" placeholder="Podaj swój nick" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg mb-4 focus:outline-none text-white" />
+      <button onclick="login()" class="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg font-semibold transition-colors">Wejdź do kasyna</button>
     </div>
-  </header>
+  </div>
 
-  <!-- Main Content -->
-  <main class="container mx-auto px-4 py-12">
-    <section class="max-w-3xl mx-auto">
-      <h2 class="text-2xl font-bold mb-6 text-center">Ruletka</h2>
-      <div id="rouletteGame" class="bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
-        <div class="flex justify-between items-center mb-6">
-          <p class="text-lg">Saldo: <span id="gameBalance" class="font-bold">0 PLN</span></p>
+  <!-- Main App -->
+  <div id="app" class="hidden container mx-auto px-4 py-12">
+    <!-- Header -->
+    <header class="bg-gray-800 bg-opacity-70 backdrop-blur-md py-4 shadow-lg sticky top-0 z-10">
+      <div class="container mx-auto px-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">Virtual Casino</h1>
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-gray-300">Gracz:</span>
+          <span id="playerName" class="text-lg font-semibold"></span>
+          <span class="text-sm text-gray-300">Saldo:</span>
+          <span id="balance" class="text-xl font-semibold">0 PLN</span>
+          <button onclick="openModal('deposit')" class="ml-4 px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-xs font-medium transition">Doładuj</button>
+          <button onclick="openModal('withdraw')" class="ml-2 px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-xs font-medium transition">Wypłać</button>
         </div>
-
-        <div class="mb-6">
-          <label for="betAmount" class="block text-sm font-medium text-gray-300 mb-2">Kwota zakładu</label>
-          <input type="number" id="betAmount" min="1" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"/>
-        </div>
-
-        <!-- Tabs -->
-        <div class="flex border-b border-gray-700 mb-6">
-          <button onclick="setTab('number')" id="tabNumber" class="py-2 px-4 font-medium border-b-2 border-blue-500 text-blue-400">Zakład na liczbę</button>
-          <button onclick="setTab('color')" id="tabColor" class="py-2 px-4 font-medium text-gray-400 hover:text-gray-200">Zakład na kolor</button>
-        </div>
-
-        <!-- Tab Content -->
-        <div id="tabContentNumbers" class="grid grid-cols-6 gap-2 mb-6"></div>
-
-        <div id="tabContentColors" class="hidden flex justify-center gap-6 mb-6">
-          <button onclick="selectColor('red')" id="btnRed" class="px-6 py-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700">Czerwony</button>
-          <button onclick="selectColor('black')" id="btnBlack" class="px-6 py-4 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700">Czarny</button>
-        </div>
-
-        <button onclick="placeBet()" id="placeBetBtn" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold transition-colors">Postaw zakład</button>
-
-        <div id="messageBox" class="mt-6 hidden p-4 rounded-lg bg-gray-700 bg-opacity-80 backdrop-blur-sm"></div>
       </div>
-    </section>
-  </main>
+    </header>
 
-  <!-- Footer -->
-  <footer class="bg-gray-800 bg-opacity-70 backdrop-blur-md py-6">
-    <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
-      <p>&copy; 2025 Virtual Casino. Wszelkie prawa zastrzeżone.</p>
-      <p class="mt-1">To jest aplikacja testowa. Nie ma realnych pieniędzy ani zakładów.</p>
-    </div>
-  </footer>
+    <!-- Game Content -->
+    <main class="max-w-3xl mx-auto mt-8">
+      <section>
+        <h2 class="text-2xl font-bold mb-6 text-center">Ruletka</h2>
+        <div id="rouletteGame" class="bg-gray-800 bg-opacity-80 rounded-xl p-6 shadow-2xl border border-gray-700">
+          <div class="flex justify-between items-center mb-6">
+            <p class="text-lg">Saldo: <span id="gameBalance" class="font-bold">0 PLN</span></p>
+          </div>
+
+          <div class="mb-6">
+            <label for="betAmount" class="block text-sm font-medium text-gray-300 mb-2">Kwota zakładu</label>
+            <input type="number" id="betAmount" min="1" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"/>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex border-b border-gray-700 mb-6">
+            <button onclick="setTab('number')" id="tabNumber" class="py-2 px-4 font-medium border-b-2 border-blue-500 text-blue-400">Zakład na liczbę</button>
+            <button onclick="setTab('color')" id="tabColor" class="py-2 px-4 font-medium text-gray-400 hover:text-gray-200">Zakład na kolor</button>
+          </div>
+
+          <!-- Tab Content -->
+          <div id="tabContentNumbers" class="grid grid-cols-6 gap-2 mb-6"></div>
+
+          <div id="tabContentColors" class="hidden flex justify-center gap-6 mb-6">
+            <button onclick="selectColor('red')" id="btnRed" class="px-6 py-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700">Czerwony</button>
+            <button onclick="selectColor('black')" id="btnBlack" class="px-6 py-4 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700">Czarny</button>
+          </div>
+
+          <button onclick="placeBet()" id="placeBetBtn" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold transition-colors">Postaw zakład</button>
+
+          <div id="messageBox" class="mt-6 hidden p-4 rounded-lg bg-gray-700 bg-opacity-80 backdrop-blur-sm"></div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <!-- Deposit Modal -->
   <div id="depositModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
@@ -103,11 +109,29 @@
     </div>
   </div>
 
+  <!-- Footer -->
+  <footer class="bg-gray-800 bg-opacity-70 backdrop-blur-md py-6 mt-12">
+    <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
+      <p>&copy; 2025 Virtual Casino. Wszelkie prawa zastrzeżone.</p>
+      <p class="mt-1">To jest aplikacja testowa. Nie ma realnych pieniędzy ani zakładów.</p>
+    </div>
+  </footer>
+
   <script>
     let balance = 0;
     let selectedNumber = null;
     let selectedColor = null;
     let activeTab = "number";
+    let username = "";
+
+    function login() {
+      const input = document.getElementById("usernameInput");
+      username = input.value.trim();
+      if (!username) return alert("Podaj swój nick!");
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+      document.getElementById("playerName").textContent = username;
+    }
 
     function updateUI() {
       document.getElementById("balance").textContent = `${balance} PLN`;
@@ -276,6 +300,8 @@
         btn.textContent = `${amount} PLN`;
         btn.onclick = () => {
           document.getElementById("depositAmount").value = amount;
+          document.querySelectorAll("#depositOptions button").forEach(b => b.classList.remove("bg-blue-600", "text-white"));
+          btn.classList.add("bg-blue-600", "text-white");
         };
         btn.className = "px-4 py-2 m-1 rounded-full text-sm font-medium bg-gray-700 hover:bg-gray-600 text-gray-300";
         depositOptionsContainer.appendChild(btn);
@@ -300,8 +326,6 @@
         }`;
         document.getElementById("tabContentNumbers").appendChild(btn);
       });
-
-      updateUI();
     };
   </script>
 </body>
