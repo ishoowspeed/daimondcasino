@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finase</title>
+  <meta name="description" content="Miłego dnia." />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:Arial,Helvetica,sans-serif;line-height:1.4;color:#0b2540;background:#f6f8fa}
+    .container{max-width:980px;margin:24px auto;padding:18px}
+    header{display:flex;justify-content:space-between;align-items:center;padding:12px;background:linear-gradient(90deg,#0b6b8f,#49a6c6);color:#fff;border-radius:8px}
+    .card{background:#fff;padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(11,38,64,0.06);margin-top:12px}
+    .balance{font-size:32px;font-weight:700;color:#0b6b8f;margin-top:8px}
+    .muted{color:#6b7885;font-size:14px}
+    .cols{display:grid;grid-template-columns:1fr 320px;gap:12px;margin-top:12px}
+    .small{font-size:13px;color:#6b7885}
+    input,button,select{font-size:14px}
+    input[type=text],input[type=number],select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef4}
+    button{padding:10px 12px;border-radius:8px;background:#f2a65a;border:none;color:#0b6b8f;font-weight:700;cursor:pointer}
+    .log{background:#f8fbfc;padding:10px;border-radius:8px;max-height:180px;overflow:auto;white-space:pre-line;font-size:13px;color:#445}
+    @media (max-width:820px){.cols{grid-template-columns:1fr}}
+    .cards-list{margin-top:8px}
+    .card-item{padding:8px;border:1px solid #eef6fa;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+    .card-item .meta{display:flex;flex-direction:column}
+    .danger{background:#ffd6d6}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div style="font-weight:800">Finiadz to Piniadz</div>
+        <div class="small">Miłego dnia</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div id="user-greeting" class="small">Nie zalogowany</div>
+        <button id="btn-open-login">Zaloguj</button>
+      </div>
+    </header>
+
+    <div class="card" id="login-card" style="display:none;margin-top:12px">
+      <h3>Logowanie / wybór użytkownika</h3>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input type="text" id="login-name" placeholder="Wpisz swoje imię (np. Jan)" />
+        <button id="btn-login">Zaloguj</button>
+        <select id="existing-users" style="min-width:160px"></select>
+      </div>
+      <div class="small" style="margin-top:8px">Po zalogowaniu imię oraz stan konta będą zapamiętane lokalnie w przeglądarce.</div>
+    </div>
+
+    <div class="card">
+      <div class="muted">Konto użytkownika: <strong id="user-name">—</strong></div>
+      <div class="balance" id="balance">0,00 PLN</div>
+      <div class="small">Ostatnia aktualizacja: <span id="last-up">—</span></div>
+    </div>
+
+    <div class="cols">
+      <main>
+        <div class="card">
+          <h3>Przelew </h3>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            <input type="text" id="tr-target" placeholder="Odbiorca (np. Imię Nazwisko)" />
+            <input type="number" id="tr-amount" placeholder="Kwota (PLN)" min="0.01" step="0.01" />
+            <button id="send-transfer">Wyślij przelew </button>
+            <div id="tr-msg" class="small muted"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Kody </h3>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input type="text" id="code-input" placeholder="Wpisz kod..." />
+            <button id="apply-code">Zastosuj</button>
+          </div>
+          <div id="code-msg" class="small muted" style="margin-top:8px"></div>
+          <div class="small" style="margin-top:8px">Dostępny kod testowy: <strong>kasyno</strong> — jednorazowo +500,00 PLN</div>
+        </div>
+
+        <div class="card">
+          <h3>Historia transakcji </h3>
+          <div id="tx-list" class="log">Brak transakcji.</div>
+        </div>
+      </main>
+
+      <aside>
+        <div class="card">
+          <h3>Karty (max 2)</h3>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input type="text" id="new-card-name" placeholder="Nazwa karty (np. Visa Prywatna)" />
+            <button id="create-card">Utwórz kartę</button>
+          </div>
+          <div id="cards-list" class="cards-list small">Brak kart.</div>
+        </div>
+
+        <div class="card">
+          <h3>Log aktywności</h3>
+          <div id="activity-log" class="log">Brak aktywności.</div>
+        </div>
+      </aside>
+    </div>
+
+  <script>
+    // Per-user storage: przechowujemy obiekt użytkowników w localStorage pod kluczem 'sim_users'
+    function readUsers(){ return JSON.parse(localStorage.getItem('sim_users') || '{}'); }
+    function writeUsers(u){ localStorage.setItem('sim_users', JSON.stringify(u)); }
+    function setCurrent(name){ localStorage.setItem('sim_current', name); }
+    function getCurrent(){ return localStorage.getItem('sim_current') || null; }
+
+    function ensureUser(name){
+      const users = readUsers();
+      if(!users[name]){
+        users[name] = { balance:0.00, txs:[], log:[], cards:[], usedCodes:[] };
+        writeUsers(users);
+      }
+    }
+
+    function fmt(n){ return n.toFixed(2).replace('.',',') + ' PLN'; }
+
+    function getUserData(name){ const users = readUsers(); return users[name]; }
+    function setUserData(name, data){ const users = readUsers(); users[name] = data; writeUsers(users); }
+
+    // UI helpers
+    function render(){
+      const cur = getCurrent();
+      document.getElementById('existing-users').innerHTML = Object.keys(readUsers()).map(n=>`<option value="${n}">${n}</option>`).join('') || '<option value="">(brak)</option>';
+      if(!cur){ document.getElementById('user-name').textContent = '—'; document.getElementById('user-greeting').textContent = 'Nie zalogowany'; return; }
+      const data = getUserData(cur);
+      document.getElementById('user-name').textContent = cur;
+      document.getElementById('user-greeting').textContent = 'Zalogowany: ' + cur;
+      document.getElementById('balance').textContent = fmt(data.balance);
+      document.getElementById('last-up').textContent = new Date().toLocaleString();
+
+      // txs
+      document.getElementById('tx-list').textContent = data.txs.length ? data.txs.map(t=>`${t.when} — ${t.desc} — ${t.amount>=0?'+':''}${fmt(Math.abs(t.amount))}`).join('\n') : 'Brak transakcji.';
+      // logs
+      document.getElementById('activity-log').textContent = data.log.length ? data.log.map(l=>`${new Date(l.t).toLocaleString()} — ${l.m}`).join('\n') : 'Brak aktywności.';
+
+      // cards
+      const cl = document.getElementById('cards-list');
+      if(data.cards.length === 0) cl.innerHTML = 'Brak kart.';
+      else cl.innerHTML = data.cards.map((c,i)=>`<div class="card-item"><div class="meta"><strong>${c.name}</strong><div class="small">**** **** **** ${c.pan.slice(-4)}</div><div class="small">Ważna do: ${c.exp}</div></div><div><button data-del="${i}" class="del-card">Usuń</button></div></div>`).join('');
+
+      // attach delete handlers
+      document.querySelectorAll('.del-card').forEach(b=>b.addEventListener('click', (e)=>{
+        const idx = parseInt(e.currentTarget.getAttribute('data-del'));
+        if(!confirm('Usuń tę kartę?')) return;
+        const u = getUserData(cur);
+        const removed = u.cards.splice(idx,1);
+        u.log.unshift({t:new Date().toISOString(), m:`Usunięto kartę kończącą się ${removed[0].pan.slice(-4)}`});
+        setUserData(cur,u); render();
+      }));
+    }
+
+    // Login UI
+    document.getElementById('btn-open-login').addEventListener('click', ()=>{
+      const el = document.getElementById('login-card'); el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      render();
+    });
+
+    document.getElementById('btn-login').addEventListener('click', ()=>{
+      const name = document.getElementById('login-name').value.trim();
+      if(!name) return alert('Wpisz imię.');
+      ensureUser(name);
+      setCurrent(name);
+      const u = getUserData(name);
+      u.log.unshift({t:new Date().toISOString(), m:'Użytkownik zalogował się.'});
+      setUserData(name,u);
+      document.getElementById('login-card').style.display = 'none';
+      render();
+    });
+
+    document.getElementById('existing-users').addEventListener('change', (e)=>{
+      const v = e.target.value; if(!v) return; setCurrent(v); const u = getUserData(v); u.log.unshift({t:new Date().toISOString(), m:'Użytkownik zalogował się (wybór).'}); setUserData(v,u); render();
+    });
+
+    // Codes
+    document.getElementById('apply-code').addEventListener('click', ()=>{
+      const cur = getCurrent(); if(!cur) return alert('Zaloguj się najpierw.');
+      const v = document.getElementById('code-input').value.trim().toLowerCase();
+      const msg = document.getElementById('code-msg'); msg.textContent = '';
+      if(!v){ msg.textContent = 'Wprowadź kod.'; return; }
+      const u = getUserData(cur);
+      if(u.usedCodes && u.usedCodes.includes(v)){ msg.textContent = 'Ten kod został już użyty.'; return; }
+      if(v === 'kasyno'){
+        const bonus = 500.00; u.balance = parseFloat((u.balance + bonus).toFixed(2));
+        u.txs.unshift({when:new Date().toLocaleString(), desc: 'Kod: kasyno', amount: bonus});
+        u.log.unshift({t:new Date().toISOString(), m:`Kod 'kasyno' zastosowany +${bonus.toFixed(2)} PLN`});
+        u.usedCodes.push(v);
+        setUserData(cur,u); msg.textContent = `Kod zaakceptowany — +${fmt(bonus)}`; document.getElementById('code-input').value = ''; render(); return;
+      }
+      msg.textContent = 'Niepoprawny kod.';
+    });
+
+    // Create card with name
+    document.getElementById('create-card').addEventListener('click', ()=>{
+      const cur = getCurrent(); if(!cur) return alert('Zaloguj się najpierw.');
+      const name = document.getElementById('new-card-name').value.trim(); if(!name) return alert('Wpisz nazwę karty.');
+      const u = getUserData(cur);
+      if(u.cards.length >= 2) return alert('Możesz mieć maksymalnie 2 karty.');
+      const pan = '4000' + Math.floor(100000000000 + Math.random()*900000000000).toString();
+      const d = new Date(); d.setFullYear(d.getFullYear()+4); const exp = String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(2);
+      u.cards.push({name, pan, exp, created:new Date().toISOString()});
+      u.log.unshift({t:new Date().toISOString(), m:`Utworzono kartę '${name}' kończącą się ${pan.slice(-4)}`});
+      setUserData(cur,u); document.getElementById('new-card-name').value = ''; render();
+    });
+
+    // Transfer
+    document.getElementById('send-transfer').addEventListener('click', ()=>{
+      const cur = getCurrent(); if(!cur) return alert('Zaloguj się najpierw.');
+      const target = document.getElementById('tr-target').value.trim();
+      const amount = parseFloat(document.getElementById('tr-amount').value);
+      const msg = document.getElementById('tr-msg'); msg.textContent = '';
+      if(!target){ msg.textContent = 'Podaj odbiorcę.'; return; }
+      if(!amount || amount <= 0){ msg.textContent = 'Podaj poprawną kwotę.'; return; }
+      const u = getUserData(cur);
+      if(amount > u.balance){ msg.textContent = 'Niewystarczające środki.'; return; }
+      u.balance = parseFloat((u.balance - amount).toFixed(2));
+      u.txs.unshift({when:new Date().toLocaleString(), desc: `Przelew do: ${target}`, amount: -amount});
+      u.log.unshift({t:new Date().toISOString(), m:`Wysłano przelew ${amount.toFixed(2)} PLN do ${target}`});
+      setUserData(cur,u); msg.textContent = 'Przelew zrealizowany.'; document.getElementById('tr-target').value = ''; document.getElementById('tr-amount').value = ''; render();
+    });
+
+    // Init
+    (function(){
+      // ensure structure
+      if(!localStorage.getItem('sim_users')) localStorage.setItem('sim_users', JSON.stringify({}));
+      const cur = getCurrent(); if(cur) ensureUser(cur);
+      render();
+    })();
+
+    // Enter shortcuts
+    document.getElementById('code-input').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('apply-code').click(); } });
+    document.getElementById('tr-amount').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('send-transfer').click(); } });
+    document.getElementById('login-name').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('btn-login').click(); } });
+  </script>
+</body>
+</html>
