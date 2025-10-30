@@ -6,7 +6,7 @@
   <title>Remiza Lelkowo - Strona oficjalna</title>
   <meta name="description" content="Oficjalna strona klubu piłkarskiego Remiza Lelkowo" />
   <style>
-    :root{
+    :root {
       --primary:#b70d0d;
       --accent:#0b0b0b;
       --muted:#f3f3f3;
@@ -15,12 +15,23 @@
       font-family: Inter, system-ui, sans-serif;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#fff 0%, #f7f7f7 100%);color:#111}
-    header{background:var(--accent);color:white;padding:12px 16px;position:sticky;top:0;z-index:50}
+    body {
+      margin:0;
+      background:linear-gradient(180deg,#fff 0%, #f7f7f7 100%);
+      color:#111;
+    }
+    header {
+      background:var(--accent);
+      color:white;
+      padding:12px 16px;
+      position:sticky;
+      top:0;
+      z-index:50;
+    }
     .container{max-width:var(--maxw);margin:0 auto;padding:24px}
-    .nav{display:flex;align-items:center;gap:16px;justify-content:space-between}
+    .nav{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap}
     .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:56px;height:56px;display:inline-block}
+    .logo{width:56px;height:56px;display:inline-block;flex-shrink:0}
     nav ul{list-style:none;margin:0;padding:0;display:flex;gap:12px}
     nav a{color:white;text-decoration:none;font-weight:600}
     .btn{background:var(--primary);color:white;padding:8px 12px;border-radius:8px;text-decoration:none}
@@ -34,21 +45,119 @@
 
     .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 6px 18px rgba(10,10,10,0.06);margin-bottom:12px}
 
-    .players{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-    .player{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#fafafa);text-align:center}
-    .player h3{margin:8px 0 4px;font-size:16px}
-    .player p{margin:0;color:#666;font-size:13px}
+    /* === BOISKO === */
+    #druzyna {
+      position:relative;
+      background:linear-gradient(180deg,#0f8f25 0%,#056b1f 100%);
+      border-radius:16px;
+      height:80vh;
+      max-width:700px;
+      margin:0 auto;
+      overflow:hidden;
+      box-shadow:0 6px 20px rgba(0,0,0,0.3);
+    }
+    #druzyna::before {
+      content:"";
+      position:absolute;
+      inset:4%;
+      border:3px solid #fff;
+      border-radius:6px;
+    }
+    #druzyna::after {
+      content:"";
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      width:20%;
+      aspect-ratio:1/1;
+      border:3px solid #fff;
+      border-radius:50%;
+    }
+    .player {
+      position:absolute;
+      width:64px;
+      height:64px;
+      border-radius:50%;
+      background:white;
+      color:#111;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      text-align:center;
+      box-shadow:0 3px 8px rgba(0,0,0,0.3);
+      font-size:13px;
+    }
+    .player span {
+      font-size:10px;
+      color:#333;
+      font-weight:600;
+      margin-top:2px;
+    }
 
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
-    th{background:#fafafa}
+    /* --- Pozycje zawodników (4-4-1-1) --- */
+    .gk {bottom:6%;left:50%;transform:translateX(-50%);}
+    .lb {bottom:22%;left:16%;}
+    .cb1 {bottom:22%;left:36%;}
+    .cb2 {bottom:22%;right:36%;}
+    .rb {bottom:22%;right:16%;}
+    .lm {bottom:42%;left:16%;}
+    .cm1 {bottom:42%;left:36%;}
+    .cm2 {bottom:42%;right:36%;}
+    .rm {bottom:42%;right:16%;}
+    .cam {bottom:60%;left:50%;transform:translateX(-50%);}
+    .st {top:8%;left:50%;transform:translateX(-50%);}
 
+    /* === GALERIA === */
     .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
     .gallery div{height:120px;border-radius:8px;background:linear-gradient(135deg,#b70d0d,#ff4444);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold}
 
     footer{padding:16px 0;text-align:center;color:#666;font-size:14px}
 
-    @media (max-width:900px){nav ul{display:none}}
+    /* --- Responsywność --- */
+    .menu-toggle {
+      display:none;
+      flex-direction:column;
+      justify-content:center;
+      gap:5px;
+      cursor:pointer;
+    }
+    .menu-toggle span {
+      width:25px;
+      height:3px;
+      background:white;
+      border-radius:2px;
+      transition:0.3s;
+    }
+
+    @media (max-width:900px){
+      nav ul {
+        display:none;
+        flex-direction:column;
+        background:var(--accent);
+        width:100%;
+        padding:12px 0;
+        margin-top:8px;
+      }
+      nav ul.show {display:flex;}
+      nav a {padding:8px 16px;display:block;}
+      .menu-toggle {display:flex;}
+      .hero h1{font-size:26px}
+      .card{padding:14px}
+      .container{padding:16px}
+      #druzyna {
+        height:70vh;
+        width:94vw;
+        margin:0 auto;
+      }
+      .player {
+        width:56px;
+        height:56px;
+        font-size:11px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -67,8 +176,13 @@
           <div style="font-size:12px;color:#ddd;margin-top:3px">Klub piłkarski</div>
         </div>
       </div>
+
+      <div class="menu-toggle" id="menu-toggle">
+        <span></span><span></span><span></span>
+      </div>
+
       <nav>
-        <ul>
+        <ul id="nav-links">
           <li><a href="#home">Strona główna</a></li>
           <li><a href="#o-klubie">O klubie</a></li>
           <li><a href="#druzyna">Drużyna</a></li>
@@ -94,25 +208,18 @@
     </section>
 
     <section id="druzyna">
-      <h2 class="section-title">Drużyna</h2>
-      <div class="players">
-        <div class="player card">
-          <h3>Adam Nowak</h3>
-          <p>Napastnik • nr 9</p>
-        </div>
-        <div class="player card">
-          <h3>Kamil Wiśniewski</h3>
-          <p>Pomocnik • nr 8</p>
-        </div>
-        <div class="player card">
-          <h3>Marcin Zieliński</h3>
-          <p>Obrońca • nr 4</p>
-        </div>
-        <div class="player card">
-          <h3>Piotr Kowalczyk</h3>
-          <p>Bramkarz • nr 1</p>
-        </div>
-      </div>
+      <!-- Formacja 4-4-1-1 -->
+      <div class="player gk">Gaśnica<span>Bramkarz</span></div>
+      <div class="player lb">Hydrant<span>Obrona</span></div>
+      <div class="player cb1">Strażak<span>Obrona</span></div>
+      <div class="player cb2">Piana<span>Obrona</span></div>
+      <div class="player rb">Zraszacz<span>Obrona</span></div>
+      <div class="player lm">Iskra<span>Pomoc</span></div>
+      <div class="player cm1">Alarm<span>Pomoc</span></div>
+      <div class="player cm2">Płomień<span>Pomoc</span></div>
+      <div class="player rm">Sygnał<span>Pomoc</span></div>
+      <div class="player cam">Ogień<span>Ofens.</span></div>
+      <div class="player st">Łasica<span>Napastnik</span></div>
     </section>
 
     <section id="mecze">
@@ -162,15 +269,22 @@
   </footer>
 
   <script>
+    // Płynne przewijanie
     document.querySelectorAll('a[href^="#"]').forEach(a=>{
       a.addEventListener('click',e=>{
         const href=a.getAttribute('href');
         if(href.length>1){
           e.preventDefault();
           document.querySelector(href).scrollIntoView({behavior:'smooth'});
+          document.getElementById('nav-links').classList.remove('show');
         }
       });
     });
+
+    // Menu mobilne
+    const toggle=document.getElementById('menu-toggle');
+    const nav=document.getElementById('nav-links');
+    toggle.addEventListener('click',()=>nav.classList.toggle('show'));
   </script>
 </body>
 </html>
